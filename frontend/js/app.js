@@ -6,6 +6,11 @@ let currentUser = null;
 let selectedRewardId = null;
 
 document.addEventListener("DOMContentLoaded", () => {
+    if (API_BASE) {
+        document.querySelectorAll('a[href^="/api/auth/login"]').forEach(a => {
+            a.href = `${API_BASE}/api/auth/login`;
+        });
+    }
     initApp();
 });
 
