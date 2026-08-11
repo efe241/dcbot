@@ -231,8 +231,10 @@ async def yardim_cmd(interaction: discord.Interaction):
 @bot.tree.command(name="addcoins", description="[ADMIN] Belirtilen kullanıcıya Coin ekler.")
 @app_commands.describe(user="Hedef kullanıcı", amount="Eklenecek miktar")
 async def addcoins_cmd(interaction: discord.Interaction, user: discord.User, amount: float):
+    if not interaction.response.is_done():
+        await interaction.response.defer(ephemeral=True)
     if not (str(interaction.user.id) in settings.admin_ids_list or interaction.user.guild_permissions.administrator):
-        await interaction.response.send_message("❌ Bu komutu kullanmak için yetkiniz yok.", ephemeral=True)
+        await interaction.followup.send("❌ Bu komutu kullanmak için yetkiniz yok.", ephemeral=True)
         return
 
     async with AsyncSessionLocal() as db:
@@ -240,7 +242,7 @@ async def addcoins_cmd(interaction: discord.Interaction, user: discord.User, amo
             db, str(user.id), Decimal(str(amount)), True, str(interaction.user.id), "Discord command addition"
         )
 
-    await interaction.response.send_message(
+    await interaction.followup.send(
         f"✅ **{user.display_name}** kullanıcısına **{amount:,.2f} Coins** eklendi! Yeni Bakiye: **{float(new_bal):,.2f} Coins**",
         ephemeral=True
     )
@@ -248,8 +250,10 @@ async def addcoins_cmd(interaction: discord.Interaction, user: discord.User, amo
 @bot.tree.command(name="removecoins", description="[ADMIN] Belirtilen kullanıcıdan Coin düşer.")
 @app_commands.describe(user="Hedef kullanıcı", amount="Düşülecek miktar")
 async def removecoins_cmd(interaction: discord.Interaction, user: discord.User, amount: float):
+    if not interaction.response.is_done():
+        await interaction.response.defer(ephemeral=True)
     if not (str(interaction.user.id) in settings.admin_ids_list or interaction.user.guild_permissions.administrator):
-        await interaction.response.send_message("❌ Bu komutu kullanmak için yetkiniz yok.", ephemeral=True)
+        await interaction.followup.send("❌ Bu komutu kullanmak için yetkiniz yok.", ephemeral=True)
         return
 
     async with AsyncSessionLocal() as db:
@@ -257,15 +261,17 @@ async def removecoins_cmd(interaction: discord.Interaction, user: discord.User, 
             db, str(user.id), Decimal(str(amount)), False, str(interaction.user.id), "Discord command removal"
         )
 
-    await interaction.response.send_message(
+    await interaction.followup.send(
         f"🔻 **{user.display_name}** kullanıcısından **{amount:,.2f} Coins** düşüldü! Yeni Bakiye: **{float(new_bal):,.2f} Coins**",
         ephemeral=True
     )
 
 @bot.tree.command(name="stats", description="[ADMIN] Sistem istatistiklerini gösterir.")
 async def stats_cmd(interaction: discord.Interaction):
+    if not interaction.response.is_done():
+        await interaction.response.defer(ephemeral=True)
     if not (str(interaction.user.id) in settings.admin_ids_list or interaction.user.guild_permissions.administrator):
-        await interaction.response.send_message("❌ Bu komutu kullanmak için yetkiniz yok.", ephemeral=True)
+        await interaction.followup.send("❌ Bu komutu kullanmak için yetkiniz yok.", ephemeral=True)
         return
 
     async with AsyncSessionLocal() as db:
@@ -283,7 +289,7 @@ async def stats_cmd(interaction: discord.Interaction):
     embed.add_field(name="İptal/Reversal", value=f"{reversals:,}", inline=True)
     embed.add_field(name="Toplam CPX Geliri", value=f"${float(revenue):,.2f} USD", inline=True)
 
-    await interaction.response.send_message(embed=embed, ephemeral=True)
+    await interaction.followup.send(embed=embed, ephemeral=True)
 
 def main():
     token = settings.DISCORD_BOT_TOKEN
