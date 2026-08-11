@@ -27,8 +27,8 @@ class Settings(BaseSettings):
     CPX_IP_WHITELIST: str = "188.40.3.73,157.90.97.92,2a01:4f8:d0a:30ff::,127.0.0.1,testclient"
 
     # AdGem Settings
-    ADGEM_APP_ID: str = "35266"
-    ADGEM_SECRET_KEY: str = "sample_adgem_secret_key"
+    ADGEM_APP_ID: str = "33188"
+    ADGEM_SECRET_KEY: str = "3hJsDUnwJMpxDDoTGyqUma0w"
     ADGEM_IP_WHITELIST: str = "52.42.57.127,54.186.196.74,54.218.125.178,127.0.0.1,testclient,*"
 
     # Economy
