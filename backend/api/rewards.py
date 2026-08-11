@@ -13,25 +13,32 @@ router = APIRouter(prefix="/api/rewards", tags=["Rewards"])
 
 DEFAULT_REWARDS = [
     {
-        "name": "200k OwO Cash",
-        "description": "Discord sunucusunda 200,000 OwO parası ödülü.",
-        "coin_price": Decimal("500.00"),
+        "name": "50k OwO Cash (Min. Paket)",
+        "description": "Discord sunucusunda 50,000 OwO parası ödülü (Minimum alım sınırı: 50 Coin).",
+        "coin_price": Decimal("50.00"),
         "reward_type": "owo_cash",
         "icon_emoji": "🪙"
     },
     {
-        "name": "500k OwO Cash",
-        "description": "Discord sunucusunda 500,000 OwO parası ödülü.",
-        "coin_price": Decimal("1200.00"),
+        "name": "200k OwO Cash",
+        "description": "Discord sunucusunda 200,000 OwO parası ödülü (1 Coin = 1,000 OwO).",
+        "coin_price": Decimal("200.00"),
         "reward_type": "owo_cash",
         "icon_emoji": "💰"
     },
     {
-        "name": "1 Million OwO Cash",
-        "description": "Discord sunucusunda 1,000,000 OwO parası büyük ödül.",
-        "coin_price": Decimal("2200.00"),
+        "name": "500k OwO Cash",
+        "description": "Discord sunucusunda 500,000 OwO parası ödülü (1 Coin = 1,000 OwO).",
+        "coin_price": Decimal("500.00"),
         "reward_type": "owo_cash",
         "icon_emoji": "💎"
+    },
+    {
+        "name": "1 Million OwO Cash",
+        "description": "Discord sunucusunda 1,000,000 OwO parası büyük ödül (1 Coin = 1,000 OwO).",
+        "coin_price": Decimal("1000.00"),
+        "reward_type": "owo_cash",
+        "icon_emoji": "👑"
     }
 ]
 
@@ -40,10 +47,9 @@ async def get_reward_items(db: AsyncSession = Depends(get_db)):
     stmt = select(RewardItem).where(RewardItem.is_active == True)
     items = (await db.execute(stmt)).scalars().all()
 
-    # Seed or refresh default items if VIP is present or 200k OwO is missing
-    has_vip = any(i.reward_type == "vip" or "VIP" in (i.name or "") for i in items)
-    has_owo = any("200k OwO" in (i.name or "") for i in items)
-    if not items or has_vip or not has_owo:
+    # Seed or refresh default items if 50k OwO Cash is missing
+    has_50k = any("50k OwO" in (i.name or "") for i in items)
+    if not items or not has_50k:
         for item in items:
             item.is_active = False
         await db.commit()
