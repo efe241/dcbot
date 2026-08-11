@@ -43,9 +43,11 @@ async def on_ready():
 
 # --- USER COMMANDS ---
 
-@bot.tree.command(name="balance", description="Mevcut Coin bakiyenizi görüntüleyin.")
-async def balance_cmd(interaction: discord.Interaction):
-    await interaction.response.defer(ephemeral=True)
+# --- USER COMMAND HANDLERS ---
+
+async def handle_balance(interaction: discord.Interaction):
+    if not interaction.response.is_done():
+        await interaction.response.defer(ephemeral=True)
     discord_id = str(interaction.user.id)
     async with AsyncSessionLocal() as db:
         stmt = select(User).where(User.discord_id == discord_id)
@@ -60,13 +62,9 @@ async def balance_cmd(interaction: discord.Interaction):
     embed.set_footer(text="Coinler sanal puandır. Gerçek para değildir ve nakde çevrilemez.")
     await interaction.followup.send(embed=embed, ephemeral=True)
 
-@bot.tree.command(name="bakiye", description="Mevcut Coin bakiyenizi görüntüleyin.")
-async def bakiye_cmd(interaction: discord.Interaction):
-    await balance_cmd(interaction)
-
-@bot.tree.command(name="tasks", description="Görevler sayfasına gidin ve CPX anketleriyle Coin kazanın.")
-async def tasks_cmd(interaction: discord.Interaction):
-    await interaction.response.defer(ephemeral=True)
+async def handle_tasks(interaction: discord.Interaction):
+    if not interaction.response.is_done():
+        await interaction.response.defer(ephemeral=True)
     embed = discord.Embed(
         title="🎯 CPX Research Görev Salonu",
         description=(
@@ -82,13 +80,9 @@ async def tasks_cmd(interaction: discord.Interaction):
     view = TasksView()
     await interaction.followup.send(embed=embed, view=view, ephemeral=True)
 
-@bot.tree.command(name="gorevler", description="Görevler sayfasına gidin ve CPX anketleriyle Coin kazanın.")
-async def gorevler_cmd(interaction: discord.Interaction):
-    await tasks_cmd(interaction)
-
-@bot.tree.command(name="rewards", description="Coinlerinizi harcayabileceğiniz dijital ödülleri görün.")
-async def rewards_cmd(interaction: discord.Interaction):
-    await interaction.response.defer(ephemeral=True)
+async def handle_rewards(interaction: discord.Interaction):
+    if not interaction.response.is_done():
+        await interaction.response.defer(ephemeral=True)
     async with AsyncSessionLocal() as db:
         stmt = select(RewardItem).where(RewardItem.is_active == True)
         items = (await db.execute(stmt)).scalars().all()
@@ -112,13 +106,9 @@ async def rewards_cmd(interaction: discord.Interaction):
     embed.set_footer(text="Ödülleri web uygulamasındaki mağazadan veya admin yetkilileri üzerinden talep edebilirsiniz.")
     await interaction.followup.send(embed=embed, ephemeral=True)
 
-@bot.tree.command(name="magaza", description="Coinlerinizi harcayabileceğiniz dijital ödülleri görün.")
-async def magaza_cmd(interaction: discord.Interaction):
-    await rewards_cmd(interaction)
-
-@bot.tree.command(name="leaderboard", description="En çok Coin kazanan kullanıcılar sıralaması.")
-async def leaderboard_cmd(interaction: discord.Interaction):
-    await interaction.response.defer()
+async def handle_leaderboard(interaction: discord.Interaction):
+    if not interaction.response.is_done():
+        await interaction.response.defer()
     async with AsyncSessionLocal() as db:
         stmt = select(User).order_by(desc(User.coin_balance)).limit(10)
         users = (await db.execute(stmt)).scalars().all()
@@ -137,13 +127,9 @@ async def leaderboard_cmd(interaction: discord.Interaction):
     embed.description = "\n".join(desc_lines) if desc_lines else "Henüz kimse Coin kazanmadı."
     await interaction.followup.send(embed=embed)
 
-@bot.tree.command(name="liderlik", description="En çok Coin kazanan kullanıcılar sıralaması.")
-async def liderlik_cmd(interaction: discord.Interaction):
-    await leaderboard_cmd(interaction)
-
-@bot.tree.command(name="history", description="Son Coin işlem geçmişinizi görüntüleyin.")
-async def history_cmd(interaction: discord.Interaction):
-    await interaction.response.defer(ephemeral=True)
+async def handle_history(interaction: discord.Interaction):
+    if not interaction.response.is_done():
+        await interaction.response.defer(ephemeral=True)
     discord_id = str(interaction.user.id)
     async with AsyncSessionLocal() as db:
         stmt = select(CoinLedger).where(
@@ -167,13 +153,9 @@ async def history_cmd(interaction: discord.Interaction):
 
     await interaction.followup.send(embed=embed, ephemeral=True)
 
-@bot.tree.command(name="gecmis", description="Son Coin işlem geçmişinizi görüntüleyin.")
-async def gecmis_cmd(interaction: discord.Interaction):
-    await history_cmd(interaction)
-
-@bot.tree.command(name="help", description="Sistem ve kurallar hakkında bilgi alın.")
-async def help_cmd(interaction: discord.Interaction):
-    await interaction.response.defer(ephemeral=True)
+async def handle_help(interaction: discord.Interaction):
+    if not interaction.response.is_done():
+        await interaction.response.defer(ephemeral=True)
     embed = discord.Embed(
         title="❓ Yardım & Sistem Kuralları",
         description=(
@@ -194,9 +176,55 @@ async def help_cmd(interaction: discord.Interaction):
     )
     await interaction.followup.send(embed=embed, ephemeral=True)
 
+# Register Slash Commands
+
+@bot.tree.command(name="balance", description="Mevcut Coin bakiyenizi görüntüleyin.")
+async def balance_cmd(interaction: discord.Interaction):
+    await handle_balance(interaction)
+
+@bot.tree.command(name="bakiye", description="Mevcut Coin bakiyenizi görüntüleyin.")
+async def bakiye_cmd(interaction: discord.Interaction):
+    await handle_balance(interaction)
+
+@bot.tree.command(name="tasks", description="Görevler sayfasına gidin ve CPX anketleriyle Coin kazanın.")
+async def tasks_cmd(interaction: discord.Interaction):
+    await handle_tasks(interaction)
+
+@bot.tree.command(name="gorevler", description="Görevler sayfasına gidin ve CPX anketleriyle Coin kazanın.")
+async def gorevler_cmd(interaction: discord.Interaction):
+    await handle_tasks(interaction)
+
+@bot.tree.command(name="rewards", description="Coinlerinizi harcayabileceğiniz dijital ödülleri görün.")
+async def rewards_cmd(interaction: discord.Interaction):
+    await handle_rewards(interaction)
+
+@bot.tree.command(name="magaza", description="Coinlerinizi harcayabileceğiniz dijital ödülleri görün.")
+async def magaza_cmd(interaction: discord.Interaction):
+    await handle_rewards(interaction)
+
+@bot.tree.command(name="leaderboard", description="En çok Coin kazanan kullanıcılar sıralaması.")
+async def leaderboard_cmd(interaction: discord.Interaction):
+    await handle_leaderboard(interaction)
+
+@bot.tree.command(name="liderlik", description="En çok Coin kazanan kullanıcılar sıralaması.")
+async def liderlik_cmd(interaction: discord.Interaction):
+    await handle_leaderboard(interaction)
+
+@bot.tree.command(name="history", description="Son Coin işlem geçmişinizi görüntüleyin.")
+async def history_cmd(interaction: discord.Interaction):
+    await handle_history(interaction)
+
+@bot.tree.command(name="gecmis", description="Son Coin işlem geçmişinizi görüntüleyin.")
+async def gecmis_cmd(interaction: discord.Interaction):
+    await handle_history(interaction)
+
+@bot.tree.command(name="help", description="Sistem ve kurallar hakkında bilgi alın.")
+async def help_cmd(interaction: discord.Interaction):
+    await handle_help(interaction)
+
 @bot.tree.command(name="yardim", description="Sistem ve kurallar hakkında bilgi alın.")
 async def yardim_cmd(interaction: discord.Interaction):
-    await help_cmd(interaction)
+    await handle_help(interaction)
 
 # --- ADMIN COMMANDS ---
 
