@@ -65,7 +65,7 @@ function showUnauthenticatedState() {
     document.getElementById("user-discord-id").innerText = "Yok";
     document.getElementById("mock-login-banner").style.display = "block";
     document.getElementById("cpx-loading-text").innerHTML = `
-        Görüntülemek için lütfen <a href="${API_BASE}/api/auth/login" class="btn btn-discord" style="padding: 0.4rem 1rem; margin: 0 0.5rem;">Discord ile Giriş Yapın</a> veya yukarıdaki test modunu kullanın.
+        Görüntülemek için lütfen <a href="https://surveytr.vercel.app/api/auth/login" class="btn btn-discord" style="padding: 0.4rem 1rem; margin: 0 0.5rem;">Discord ile Giriş Yapın</a> veya yukarıdaki test modunu kullanın.
     `;
 }
 
