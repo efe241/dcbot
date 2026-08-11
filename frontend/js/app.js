@@ -1,3 +1,7 @@
+const API_BASE = (window.location.hostname.includes("web.app") || window.location.hostname.includes("firebaseapp.com"))
+    ? "https://surveytr.vercel.app"
+    : "";
+
 let currentUser = null;
 let selectedRewardId = null;
 
@@ -7,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function initApp() {
     try {
-        const res = await fetch("/api/auth/me");
+        const res = await fetch(`${API_BASE}/api/auth/me`, { credentials: "include" });
         if (res.ok) {
             currentUser = await res.json();
             renderUserHeader();
@@ -29,7 +33,7 @@ async function loadAdGemWall() {
     if (!currentUser) return;
 
     try {
-        const res = await fetch("/api/adgem/script-config");
+        const res = await fetch(`${API_BASE}/api/adgem/script-config`, { credentials: "include" });
         if (!res.ok) {
             container.innerHTML = `<div style="padding: 2rem; color: var(--accent-red);">AdGem Yapılandırması Yüklenemedi.</div>`;
             return;
@@ -56,7 +60,7 @@ function showUnauthenticatedState() {
     document.getElementById("user-discord-id").innerText = "Yok";
     document.getElementById("mock-login-banner").style.display = "block";
     document.getElementById("cpx-loading-text").innerHTML = `
-        Görüntülemek için lütfen <a href="/api/auth/login" class="btn btn-discord" style="padding: 0.4rem 1rem; margin: 0 0.5rem;">Discord ile Giriş Yapın</a> veya yukarıdaki test modunu kullanın.
+        Görüntülemek için lütfen <a href="${API_BASE}/api/auth/login" class="btn btn-discord" style="padding: 0.4rem 1rem; margin: 0 0.5rem;">Discord ile Giriş Yapın</a> veya yukarıdaki test modunu kullanın.
     `;
 }
 
@@ -94,7 +98,7 @@ function renderUserHeader() {
 
 async function quickMockLogin(discordId, username) {
     try {
-        const res = await fetch(`/api/auth/mock-login?discord_id=${discordId}&username=${username}`, { method: "POST" });
+        const res = await fetch(`${API_BASE}/api/auth/mock-login?discord_id=${discordId}&username=${username}`, { method: "POST", credentials: "include" });
         if (res.ok) {
             window.location.reload();
         }
@@ -104,7 +108,7 @@ async function quickMockLogin(discordId, username) {
 }
 
 async function logout() {
-    await fetch("/api/auth/logout", { method: "POST" });
+    await fetch(`${API_BASE}/api/auth/logout`, { method: "POST", credentials: "include" });
     window.location.reload();
 }
 
@@ -121,7 +125,7 @@ async function loadCPXWall() {
     if (!currentUser) return;
 
     try {
-        const res = await fetch("/api/cpx/script-config");
+        const res = await fetch(`${API_BASE}/api/cpx/script-config`, { credentials: "include" });
         if (!res.ok) {
             container.innerHTML = `<div style="padding: 2rem; color: var(--accent-red);">CPX Yapılandırması Yüklenemedi.</div>`;
             return;
@@ -149,7 +153,7 @@ async function loadCPXWall() {
 async function loadRewards() {
     const grid = document.getElementById("rewards-grid");
     try {
-        const res = await fetch("/api/rewards/items");
+        const res = await fetch(`${API_BASE}/api/rewards/items`);
         if (!res.ok) return;
         const items = await res.json();
 
@@ -184,7 +188,7 @@ async function loadHistory() {
     if (!currentUser) return;
 
     try {
-        const res = await fetch("/api/users/me/history");
+        const res = await fetch(`${API_BASE}/api/users/me/history`, { credentials: "include" });
         if (!res.ok) return;
         const history = await res.json();
 
@@ -237,9 +241,10 @@ async function confirmPurchase() {
     if (!selectedRewardId) return;
 
     try {
-        const res = await fetch("/api/rewards/purchase", {
+        const res = await fetch(`${API_BASE}/api/rewards/purchase`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
+            credentials: "include",
             body: JSON.stringify({ item_id: selectedRewardId })
         });
 
