@@ -125,7 +125,7 @@ async def get_adgem_config(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    iframe_url = f"https://api.adgem.com/v1/wall?appid={settings.ADGEM_APP_ID}&playerid={discord_id}"
+    iframe_url = f"https://adunits.adgem.com/wall?appid={settings.ADGEM_APP_ID}&playerid={discord_id}"
 
     return {
         "app_id": settings.ADGEM_APP_ID,
