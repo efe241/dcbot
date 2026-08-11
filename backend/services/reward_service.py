@@ -11,10 +11,79 @@ from backend.models.log import PostbackLog
 from backend.services.cpx_service import CPXService
 from backend.services.fraud_service import FraudService
 from backend.config import settings
+import httpx
+import datetime
 import logging
 import json
 
 logger = logging.getLogger(__name__)
+
+async def send_order_notification_to_discord(user: User, item: RewardItem):
+    """
+    Sends a rich Discord order notification via Discord Webhook or Bot REST API.
+    """
+    webhook_url = settings.DISCORD_ORDER_WEBHOOK_URL
+    channel_id = settings.DISCORD_ORDER_CHANNEL_ID
+    bot_token = settings.DISCORD_BOT_TOKEN
+
+    embed = {
+        "title": "🛍️ Yeni Ödül Siparişi Alındı!",
+        "description": f"**<@{user.discord_id}>** kullanıcısı mağazadan yeni bir sipariş verdi!",
+        "color": 0xF59E0B,  # Gold accent
+        "fields": [
+            {
+                "name": "👤 Kullanıcı",
+                "value": f"{user.discord_username} (`{user.discord_id}`)",
+                "inline": True
+            },
+            {
+                "name": "🎁 Satın Alınan Ödül",
+                "value": f"{item.icon_emoji or '📦'} **{item.name}**",
+                "inline": True
+            },
+            {
+                "name": "💰 Harcanan Coin",
+                "value": f"**{float(item.coin_price):,.0f} Coins**",
+                "inline": True
+            },
+            {
+                "name": "💳 Kalan Bakiye",
+                "value": f"{float(user.coin_balance):,.2f} Coins",
+                "inline": True
+            }
+        ],
+        "footer": {
+            "text": "SurveyTR Sipariş Takip Sistemi — Otomatik Bildirim"
+        },
+        "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat()
+    }
+
+    headers = {"Content-Type": "application/json"}
+
+    # 1. Post to Webhook if provided
+    if webhook_url and webhook_url.startswith("https://"):
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                await client.post(webhook_url, json={"content": f"🚨 **YENİ SİPARİŞ!** <@{user.discord_id}> ({item.name})", "embeds": [embed]}, headers=headers)
+                return
+        except Exception as e:
+            logger.error(f"Failed to post order webhook: {e}")
+
+    # 2. Post to Channel via Bot API if channel_id & bot_token provided
+    if channel_id and bot_token and bot_token != "mock_bot_token":
+        try:
+            bot_headers = {
+                "Authorization": f"Bot {bot_token}",
+                "Content-Type": "application/json"
+            }
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                await client.post(
+                    f"https://discord.com/api/v10/channels/{channel_id}/messages",
+                    json={"content": f"🚨 **YENİ SİPARİŞ!** <@{user.discord_id}> ({item.name})", "embeds": [embed]},
+                    headers=bot_headers
+                )
+        except Exception as e:
+            logger.error(f"Failed to post order to Discord channel via Bot API: {e}")
 
 class RewardService:
     @staticmethod
@@ -300,5 +369,11 @@ class RewardService:
         )
         db.add(ledger_entry)
         await db.commit()
+
+        # Notify Discord order channel or webhook
+        try:
+            await send_order_notification_to_discord(user, item)
+        except Exception as e:
+            logger.error(f"Error sending order notification to Discord: {e}")
 
         return True, f"Successfully purchased {item.name}!", item

@@ -266,6 +266,21 @@ async def removecoins_cmd(interaction: discord.Interaction, user: discord.User, 
         ephemeral=True
     )
 
+@bot.tree.command(name="setorderchannel", description="[ADMIN] Sipariş bildirimlerinin gönderileceği kanalı ayarlar.")
+@app_commands.describe(channel="Sipariş bildirim kanalı")
+async def setorderchannel_cmd(interaction: discord.Interaction, channel: discord.TextChannel):
+    if not interaction.response.is_done():
+        await interaction.response.defer(ephemeral=True)
+    if not (str(interaction.user.id) in settings.admin_ids_list or interaction.user.guild_permissions.administrator):
+        await interaction.followup.send("❌ Bu komutu kullanmak için yetkiniz yok.", ephemeral=True)
+        return
+
+    settings.DISCORD_ORDER_CHANNEL_ID = str(channel.id)
+    await interaction.followup.send(
+        f"✅ Sipariş bildirim kanalı {channel.mention} (`ID: {channel.id}`) olarak başarıyla ayarlandı!",
+        ephemeral=True
+    )
+
 @bot.tree.command(name="stats", description="[ADMIN] Sistem istatistiklerini gösterir.")
 async def stats_cmd(interaction: discord.Interaction):
     if not interaction.response.is_done():

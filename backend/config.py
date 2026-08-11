@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     DISCORD_CLIENT_ID: str = "1536637500469153852"
     DISCORD_CLIENT_SECRET: str = "mock_client_secret"
     DISCORD_REDIRECT_URI: str = "https://surveytr.vercel.app/api/auth/callback"
+    DISCORD_ORDER_WEBHOOK_URL: str = ""
+    DISCORD_ORDER_CHANNEL_ID: str = ""
     ADMIN_DISCORD_IDS: str = ""
     ADMIN_PASSWORD: str = "Me261211@"
 
