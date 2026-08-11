@@ -41,8 +41,8 @@ async def adgem_postback(request: Request, db: AsyncSession = Depends(get_db)):
 
     player_id = str(params.get("player_id") or params.get("user_id") or "").strip()
     trans_id = str(params.get("transaction_id") or params.get("trans_id") or "").strip()
-    amount_raw = params.get("amount") or params.get("coins") or "0"
-    verifier = str(params.get("verifier") or "").strip()
+    amount_raw = params.get("amount") or params.get("payout") or params.get("coins") or "0"
+    click_ip = str(params.get("ip") or client_ip).strip()
 
     if not player_id or not trans_id:
         return Response(content="ERROR: Missing player_id or transaction_id", status_code=400, media_type="text/plain")
