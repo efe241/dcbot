@@ -12,9 +12,9 @@ class Settings(BaseSettings):
 
     # Discord
     DISCORD_BOT_TOKEN: str = "mock_bot_token"
-    DISCORD_CLIENT_ID: str = "123456789"
+    DISCORD_CLIENT_ID: str = "1536637500469153852"
     DISCORD_CLIENT_SECRET: str = "mock_client_secret"
-    DISCORD_REDIRECT_URI: str = "http://localhost:8000/api/auth/callback"
+    DISCORD_REDIRECT_URI: str = "https://surveytr.vercel.app/api/auth/callback"
     ADMIN_DISCORD_IDS: str = ""
     ADMIN_PASSWORD: str = "Me261211@"
 
