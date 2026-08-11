@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, Body
+from fastapi import APIRouter, Depends, HTTPException, Body, Request, Response
+from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc
 from backend.database import get_db
@@ -7,19 +8,59 @@ from backend.models.transaction import CPXTransaction
 from backend.models.ledger import CoinLedger
 from backend.models.log import PostbackLog
 from backend.services.reward_service import RewardService
-from backend.api.auth import get_current_user_id
 from backend.config import settings
 from decimal import Decimal
 import datetime
+import jwt
 import logging
+from typing import Dict, Any
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/admin", tags=["Admin"])
 
-async def verify_admin(discord_id: str = Depends(get_current_user_id)):
-    if discord_id in settings.admin_ids_list or settings.ENVIRONMENT == "development":
-        return discord_id
-    raise HTTPException(status_code=403, detail="Admin privilege required")
+@router.post("/login")
+async def admin_login(payload: Dict[str, Any] = Body(...)):
+    password = str(payload.get("password") or "").strip()
+    expected_password = settings.ADMIN_PASSWORD or "Me261211@"
+
+    if password != expected_password:
+        raise HTTPException(status_code=401, detail="Geçersiz admin şifresi")
+
+    exp = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=1)
+    admin_token = jwt.encode(
+        {"is_admin": True, "exp": exp},
+        settings.SECRET_KEY,
+        algorithm="HS256"
+    )
+
+    res = JSONResponse(content={"success": True, "message": "Admin girişi başarılı"})
+    res.set_cookie(
+        key="admin_session_token",
+        value=admin_token,
+        httponly=True,
+        max_age=24 * 3600,
+        samesite="lax"
+    )
+    return res
+
+async def verify_admin(request: Request):
+    token = request.cookies.get("admin_session_token")
+    if not token:
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.split(" ")[1]
+
+    if not token:
+        raise HTTPException(status_code=401, detail="Admin şifre doğrulaması gerekli")
+
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+        if payload.get("is_admin") is True:
+            return True
+    except Exception:
+        pass
+
+    raise HTTPException(status_code=401, detail="Geçersiz veya süresi dolmuş admin oturumu")
 
 @router.get("/stats")
 async def get_admin_stats(

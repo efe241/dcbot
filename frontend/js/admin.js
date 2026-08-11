@@ -1,16 +1,63 @@
 document.addEventListener("DOMContentLoaded", () => {
-    loadAdminStats();
-    loadPostbackLogs();
-    loadUsers();
-
+    checkAdminAuth();
     document.getElementById("coin-adjust-form").addEventListener("submit", handleCoinAdjustment);
 });
+
+async function checkAdminAuth() {
+    try {
+        const res = await fetch("/api/admin/stats");
+        if (res.ok) {
+            document.getElementById("admin-auth-modal").style.display = "none";
+            document.getElementById("admin-dashboard-container").style.display = "block";
+            loadAdminStats();
+            loadPostbackLogs();
+            loadUsers();
+        } else {
+            document.getElementById("admin-auth-modal").style.display = "flex";
+            document.getElementById("admin-dashboard-container").style.display = "none";
+        }
+    } catch (err) {
+        document.getElementById("admin-auth-modal").style.display = "flex";
+        document.getElementById("admin-dashboard-container").style.display = "none";
+    }
+}
+
+async function submitAdminLogin(e) {
+    e.preventDefault();
+    const errorDiv = document.getElementById("admin-login-error");
+    const password = document.getElementById("admin-password-input").value.trim();
+
+    errorDiv.style.display = "none";
+
+    try {
+        const res = await fetch("/api/admin/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ password })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+            document.getElementById("admin-auth-modal").style.display = "none";
+            document.getElementById("admin-dashboard-container").style.display = "block";
+            loadAdminStats();
+            loadPostbackLogs();
+            loadUsers();
+        } else {
+            errorDiv.innerText = "❌ " + (data.detail || "Geçersiz şifre!");
+            errorDiv.style.display = "block";
+        }
+    } catch (err) {
+        errorDiv.innerText = "❌ Bağlantı hatası: " + err;
+        errorDiv.style.display = "block";
+    }
+}
 
 async function loadAdminStats() {
     try {
         const res = await fetch("/api/admin/stats");
         if (!res.ok) {
-            alert("Admin yetkisi doğrulanamadı.");
+            checkAdminAuth();
             return;
         }
         const data = await res.json();

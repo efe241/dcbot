@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     DISCORD_CLIENT_SECRET: str = "mock_client_secret"
     DISCORD_REDIRECT_URI: str = "http://localhost:8000/api/auth/callback"
     ADMIN_DISCORD_IDS: str = ""
+    ADMIN_PASSWORD: str = "Me261211@"
 
     # Database
     DATABASE_URL: str = "sqlite+aiosqlite:////tmp/cpx_coins.db" if os.environ.get("VERCEL") else "sqlite+aiosqlite:///./cpx_coins.db"
