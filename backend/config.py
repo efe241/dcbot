@@ -26,6 +26,11 @@ class Settings(BaseSettings):
     CPX_APP_SECURE_HASH: str = "sample_secure_hash_secret"
     CPX_IP_WHITELIST: str = "188.40.3.73,157.90.97.92,2a01:4f8:d0a:30ff::,127.0.0.1,testclient"
 
+    # AdGem Settings
+    ADGEM_APP_ID: str = "35266"
+    ADGEM_SECRET_KEY: str = "sample_adgem_secret_key"
+    ADGEM_IP_WHITELIST: str = "52.42.57.127,54.186.196.74,54.218.125.178,127.0.0.1,testclient"
+
     # Economy
     COINS_PER_USD: Decimal = Decimal("100")
 
@@ -38,6 +43,10 @@ class Settings(BaseSettings):
     @property
     def allowed_cpx_ips(self) -> List[str]:
         return [ip.strip() for ip in self.CPX_IP_WHITELIST.split(",") if ip.strip()]
+
+    @property
+    def allowed_adgem_ips(self) -> List[str]:
+        return [ip.strip() for ip in self.ADGEM_IP_WHITELIST.split(",") if ip.strip()]
 
     @property
     def admin_ids_list(self) -> List[str]:

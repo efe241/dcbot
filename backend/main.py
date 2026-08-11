@@ -3,7 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from backend.database import init_db
-from backend.api import auth, cpx, users, rewards, admin
+from backend.api import auth, cpx, adgem, users, rewards, admin
 from backend.config import settings
 import os
 import logging
@@ -32,6 +32,7 @@ app.add_middleware(
 # Register API Routers
 app.include_router(auth.router)
 app.include_router(cpx.router)
+app.include_router(adgem.router)
 app.include_router(users.router)
 app.include_router(rewards.router)
 app.include_router(admin.router)

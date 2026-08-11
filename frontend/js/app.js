@@ -12,6 +12,7 @@ async function initApp() {
             currentUser = await res.json();
             renderUserHeader();
             loadCPXWall();
+            loadAdGemWall();
             loadRewards();
             loadHistory();
         } else {
@@ -20,6 +21,33 @@ async function initApp() {
     } catch (err) {
         console.error("Auth check failed:", err);
         showUnauthenticatedState();
+    }
+}
+
+async function loadAdGemWall() {
+    const container = document.getElementById("adgem-offerwall-container");
+    if (!currentUser) return;
+
+    try {
+        const res = await fetch("/api/adgem/script-config");
+        if (!res.ok) {
+            container.innerHTML = `<div style="padding: 2rem; color: var(--accent-red);">AdGem Yapılandırması Yüklenemedi.</div>`;
+            return;
+        }
+
+        const config = await res.json();
+        
+        container.innerHTML = `
+            <iframe src="${config.iframe_url}" 
+                    style="width: 100%; height: 750px; border: none; border-radius: var(--radius-md);" 
+                    allow="geolocation" 
+                    title="AdGem Offerwall">
+            </iframe>
+        `;
+
+    } catch (err) {
+        console.error("AdGem Wall error:", err);
+        container.innerHTML = `<div style="padding: 2rem; color: var(--accent-red);">AdGem duvarı yüklenirken hata oluştu.</div>`;
     }
 }
 

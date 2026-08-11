@@ -76,7 +76,8 @@
 
         <!-- Navigation Tabs -->
         <div class="tabs-nav">
-            <button class="tab-btn active" onclick="switchTab('cpx-wall', this)">🎯 CPX SurveyWall</button>
+            <button class="tab-btn active" onclick="switchTab('cpx-wall', this)">📊 CPX Anketler</button>
+            <button class="tab-btn" onclick="switchTab('adgem-wall', this)">🎮 AdGem Oyun & Görevler</button>
             <button class="tab-btn" onclick="switchTab('rewards-shop', this)">🎁 Ödül Mağazası</button>
             <button class="tab-btn" onclick="switchTab('history-tab', this)">📜 İşlem Geçmişi</button>
             <button class="tab-btn" onclick="switchTab('rules-tab', this)">⚖️ Kurallar & SSS</button>
@@ -87,7 +88,7 @@
             <div class="glass-card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                     <div>
-                        <h3 style="font-size: 1.25rem; margin-bottom: 0.25rem;">🎯 CPX Research Anket Duvarı</h3>
+                        <h3 style="font-size: 1.25rem; margin-bottom: 0.25rem;">📊 CPX Research Anket Duvarı</h3>
                         <p style="font-size: 0.85rem; color: var(--text-muted);">Aşağıdaki listeden dilediğiniz anketi seçip tamamlayarak Coin kazanın.</p>
                     </div>
                     <button class="btn btn-secondary" onclick="loadCPXWall()" style="font-size: 0.85rem;">🔄 Duvarı Yenile</button>
@@ -96,6 +97,25 @@
                 <div id="cpx-surveywall-container">
                     <div style="text-align: center; color: var(--text-muted); padding: 3rem;">
                         <p id="cpx-loading-text">Anket Duvarı Yükleniyor...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: AdGem Offerwall -->
+        <div id="adgem-wall" class="tab-content" style="display: none;">
+            <div class="glass-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <div>
+                        <h3 style="font-size: 1.25rem; margin-bottom: 0.25rem;">🎮 AdGem Oyun & Görev Duvarı</h3>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Popüler mobil/web oyunlarını oynayın, görevleri tamamlayarak yüksek miktarda Coin kazanın!</p>
+                    </div>
+                    <button class="btn btn-secondary" onclick="loadAdGemWall()" style="font-size: 0.85rem;">🔄 Duvarı Yenile</button>
+                </div>
+
+                <div id="adgem-offerwall-container">
+                    <div style="text-align: center; color: var(--text-muted); padding: 3rem;">
+                        <p id="adgem-loading-text">AdGem Oyun Duvarı Yükleniyor...</p>
                     </div>
                 </div>
             </div>
