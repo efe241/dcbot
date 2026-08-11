@@ -47,11 +47,28 @@ if os.path.exists(frontend_path):
     if os.path.exists(js_path):
         app.mount("/js", StaticFiles(directory=js_path), name="js")
 
+import asyncio
+
 @app.on_event("startup")
 async def on_startup():
     logger.info("Initializing database schema...")
     await init_db()
+    
+    # Launch Discord Bot in background task if token is set
+    token = settings.DISCORD_BOT_TOKEN
+    if token and token != "mock_bot_token":
+        try:
+            from bot.bot import bot
+            asyncio.create_task(bot.start(token))
+            logger.info("Discord Bot background task started successfully.")
+        except Exception as e:
+            logger.error(f"Failed to start Discord Bot background task: {e}")
+
     logger.info("Startup complete.")
+
+@app.get("/health")
+async def health_check():
+    return {"status": "ok", "service": "SurveyTR Web & Discord Bot", "version": "1.0.0"}
 
 @app.get("/")
 async def read_root():
