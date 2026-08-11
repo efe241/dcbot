@@ -18,13 +18,23 @@ import json
 
 logger = logging.getLogger(__name__)
 
-async def send_order_notification_to_discord(user: User, item: RewardItem):
+async def send_order_notification_to_discord(db: AsyncSession, user: User, item: RewardItem):
     """
     Sends a rich Discord order notification via Discord Webhook or Bot REST API.
     """
     webhook_url = settings.DISCORD_ORDER_WEBHOOK_URL
     channel_id = settings.DISCORD_ORDER_CHANNEL_ID
     bot_token = settings.DISCORD_BOT_TOKEN
+
+    # If channel_id is not set in config memory, query database SystemSetting
+    if not channel_id:
+        try:
+            setting_stmt = select(SystemSetting).where(SystemSetting.key == "order_channel_id")
+            setting_obj = (await db.execute(setting_stmt)).scalar_one_or_none()
+            if setting_obj and setting_obj.value:
+                channel_id = setting_obj.value.strip()
+        except Exception as err:
+            logger.warning(f"Failed to fetch order_channel_id from SystemSetting DB: {err}")
 
     embed = {
         "title": "🛍️ Yeni Ödül Siparişi Alındı!",
@@ -70,18 +80,22 @@ async def send_order_notification_to_discord(user: User, item: RewardItem):
             logger.error(f"Failed to post order webhook: {e}")
 
     # 2. Post to Channel via Bot API if channel_id & bot_token provided
-    if channel_id and bot_token and bot_token != "mock_bot_token":
+    if channel_id and bot_token:
         try:
             bot_headers = {
                 "Authorization": f"Bot {bot_token}",
                 "Content-Type": "application/json"
             }
             async with httpx.AsyncClient(timeout=10.0) as client:
-                await client.post(
+                res = await client.post(
                     f"https://discord.com/api/v10/channels/{channel_id}/messages",
                     json={"content": f"🚨 **YENİ SİPARİŞ!** <@{user.discord_id}> ({item.name})", "embeds": [embed]},
                     headers=bot_headers
                 )
+                if res.status_code in (200, 201):
+                    logger.info(f"Order notification sent to Discord channel {channel_id}")
+                else:
+                    logger.error(f"Discord Bot API error ({res.status_code}): {res.text}")
         except Exception as e:
             logger.error(f"Failed to post order to Discord channel via Bot API: {e}")
 
@@ -372,8 +386,24 @@ class RewardService:
 
         # Notify Discord order channel or webhook
         try:
-            await send_order_notification_to_discord(user, item)
+            await send_order_notification_to_discord(db, user, item)
         except Exception as e:
             logger.error(f"Error sending order notification to Discord: {e}")
 
         return True, f"Successfully purchased {item.name}!", item
+
+    @staticmethod
+    async def set_order_channel(db: AsyncSession, channel_id: str) -> bool:
+        """
+        Saves or updates order_channel_id in SystemSetting DB table.
+        """
+        stmt = select(SystemSetting).where(SystemSetting.key == "order_channel_id")
+        setting = (await db.execute(stmt)).scalar_one_or_none()
+        if not setting:
+            setting = SystemSetting(key="order_channel_id", value=channel_id)
+            db.add(setting)
+        else:
+            setting.value = channel_id
+        await db.commit()
+        settings.DISCORD_ORDER_CHANNEL_ID = channel_id
+        return True

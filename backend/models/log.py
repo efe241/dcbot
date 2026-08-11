@@ -19,3 +19,10 @@ class PostbackLog(Base):
 
     def __repr__(self):
         return f"<PostbackLog id={self.id} ip={self.ip_address} trans_id={self.trans_id} processed={self.processed}>"
+
+class SystemSetting(Base):
+    __tablename__ = "system_settings"
+
+    key = Column(String(64), primary_key=True, index=True)
+    value = Column(Text, nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)

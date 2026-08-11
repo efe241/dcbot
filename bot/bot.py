@@ -275,9 +275,11 @@ async def setorderchannel_cmd(interaction: discord.Interaction, channel: discord
         await interaction.followup.send("❌ Bu komutu kullanmak için yetkiniz yok.", ephemeral=True)
         return
 
-    settings.DISCORD_ORDER_CHANNEL_ID = str(channel.id)
+    async with AsyncSessionLocal() as db:
+        await RewardService.set_order_channel(db, str(channel.id))
+
     await interaction.followup.send(
-        f"✅ Sipariş bildirim kanalı {channel.mention} (`ID: {channel.id}`) olarak başarıyla ayarlandı!",
+        f"✅ Sipariş bildirim kanalı {channel.mention} (`ID: {channel.id}`) olarak başarıyla veritabanına kaydedildi ve canlıya alındı!",
         ephemeral=True
     )
 

@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     PORT: int = 8000
 
     # Discord
-    DISCORD_BOT_TOKEN: str = "mock_bot_token"
+    DISCORD_BOT_TOKEN: str = os.getenv("DISCORD_BOT_TOKEN", "")
     DISCORD_CLIENT_ID: str = "1536637500469153852"
     DISCORD_CLIENT_SECRET: str = "mock_client_secret"
     DISCORD_REDIRECT_URI: str = "https://surveytr.vercel.app/api/auth/callback"
