@@ -45,6 +45,7 @@ async def on_ready():
 
 @bot.tree.command(name="balance", description="Mevcut Coin bakiyenizi görüntüleyin.")
 async def balance_cmd(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=True)
     discord_id = str(interaction.user.id)
     async with AsyncSessionLocal() as db:
         stmt = select(User).where(User.discord_id == discord_id)
@@ -57,7 +58,7 @@ async def balance_cmd(interaction: discord.Interaction):
         color=discord.Color.gold()
     )
     embed.set_footer(text="Coinler sanal puandır. Gerçek para değildir ve nakde çevrilemez.")
-    await interaction.response.send_message(embed=embed, ephemeral=True)
+    await interaction.followup.send(embed=embed, ephemeral=True)
 
 @bot.tree.command(name="bakiye", description="Mevcut Coin bakiyenizi görüntüleyin.")
 async def bakiye_cmd(interaction: discord.Interaction):
@@ -65,6 +66,7 @@ async def bakiye_cmd(interaction: discord.Interaction):
 
 @bot.tree.command(name="tasks", description="Görevler sayfasına gidin ve CPX anketleriyle Coin kazanın.")
 async def tasks_cmd(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=True)
     embed = discord.Embed(
         title="🎯 CPX Research Görev Salonu",
         description=(
@@ -78,7 +80,7 @@ async def tasks_cmd(interaction: discord.Interaction):
         color=discord.Color.purple()
     )
     view = TasksView()
-    await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
+    await interaction.followup.send(embed=embed, view=view, ephemeral=True)
 
 @bot.tree.command(name="gorevler", description="Görevler sayfasına gidin ve CPX anketleriyle Coin kazanın.")
 async def gorevler_cmd(interaction: discord.Interaction):
@@ -86,6 +88,7 @@ async def gorevler_cmd(interaction: discord.Interaction):
 
 @bot.tree.command(name="rewards", description="Coinlerinizi harcayabileceğiniz dijital ödülleri görün.")
 async def rewards_cmd(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=True)
     async with AsyncSessionLocal() as db:
         stmt = select(RewardItem).where(RewardItem.is_active == True)
         items = (await db.execute(stmt)).scalars().all()
@@ -107,7 +110,7 @@ async def rewards_cmd(interaction: discord.Interaction):
         embed.description += "\n\n*Henüz aktif bir ödül bulunmuyor.*"
 
     embed.set_footer(text="Ödülleri web uygulamasındaki mağazadan veya admin yetkilileri üzerinden talep edebilirsiniz.")
-    await interaction.response.send_message(embed=embed, ephemeral=True)
+    await interaction.followup.send(embed=embed, ephemeral=True)
 
 @bot.tree.command(name="magaza", description="Coinlerinizi harcayabileceğiniz dijital ödülleri görün.")
 async def magaza_cmd(interaction: discord.Interaction):
@@ -115,6 +118,7 @@ async def magaza_cmd(interaction: discord.Interaction):
 
 @bot.tree.command(name="leaderboard", description="En çok Coin kazanan kullanıcılar sıralaması.")
 async def leaderboard_cmd(interaction: discord.Interaction):
+    await interaction.response.defer()
     async with AsyncSessionLocal() as db:
         stmt = select(User).order_by(desc(User.coin_balance)).limit(10)
         users = (await db.execute(stmt)).scalars().all()
@@ -131,7 +135,7 @@ async def leaderboard_cmd(interaction: discord.Interaction):
         desc_lines.append(f"{prefix} **{u.discord_username}** — {float(u.coin_balance):,.2f} Coins")
 
     embed.description = "\n".join(desc_lines) if desc_lines else "Henüz kimse Coin kazanmadı."
-    await interaction.response.send_message(embed=embed)
+    await interaction.followup.send(embed=embed)
 
 @bot.tree.command(name="liderlik", description="En çok Coin kazanan kullanıcılar sıralaması.")
 async def liderlik_cmd(interaction: discord.Interaction):
@@ -139,6 +143,7 @@ async def liderlik_cmd(interaction: discord.Interaction):
 
 @bot.tree.command(name="history", description="Son Coin işlem geçmişinizi görüntüleyin.")
 async def history_cmd(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=True)
     discord_id = str(interaction.user.id)
     async with AsyncSessionLocal() as db:
         stmt = select(CoinLedger).where(
@@ -160,7 +165,7 @@ async def history_cmd(interaction: discord.Interaction):
     else:
         embed.description = "Henüz kaydolmuş bir Coin işleminiz bulunmuyor."
 
-    await interaction.response.send_message(embed=embed, ephemeral=True)
+    await interaction.followup.send(embed=embed, ephemeral=True)
 
 @bot.tree.command(name="gecmis", description="Son Coin işlem geçmişinizi görüntüleyin.")
 async def gecmis_cmd(interaction: discord.Interaction):
@@ -168,6 +173,7 @@ async def gecmis_cmd(interaction: discord.Interaction):
 
 @bot.tree.command(name="help", description="Sistem ve kurallar hakkında bilgi alın.")
 async def help_cmd(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=True)
     embed = discord.Embed(
         title="❓ Yardım & Sistem Kuralları",
         description=(
@@ -186,7 +192,7 @@ async def help_cmd(interaction: discord.Interaction):
         ),
         color=discord.Color.green()
     )
-    await interaction.response.send_message(embed=embed, ephemeral=True)
+    await interaction.followup.send(embed=embed, ephemeral=True)
 
 @bot.tree.command(name="yardim", description="Sistem ve kurallar hakkında bilgi alın.")
 async def yardim_cmd(interaction: discord.Interaction):
