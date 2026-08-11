@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     # AdGem Settings
     ADGEM_APP_ID: str = "35266"
     ADGEM_SECRET_KEY: str = "sample_adgem_secret_key"
-    ADGEM_IP_WHITELIST: str = "52.42.57.127,54.186.196.74,54.218.125.178,127.0.0.1,testclient"
+    ADGEM_IP_WHITELIST: str = "52.42.57.127,54.186.196.74,54.218.125.178,127.0.0.1,testclient,*"
 
     # Economy
     COINS_PER_USD: Decimal = Decimal("100")

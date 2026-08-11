@@ -53,7 +53,7 @@ async def adgem_postback(request: Request, db: AsyncSession = Depends(get_db)):
         amount_usd = Decimal("0")
 
     # 1. IP Whitelist check
-    if settings.ENVIRONMENT != "development" and client_ip not in settings.allowed_adgem_ips:
+    if settings.ENVIRONMENT != "development" and "*" not in settings.allowed_adgem_ips and client_ip not in settings.allowed_adgem_ips:
         logger.warning(f"AdGem Postback rejected: Unauthorized IP {client_ip}")
         return Response(content="ERROR: Unauthorized IP", status_code=403, media_type="text/plain")
 
