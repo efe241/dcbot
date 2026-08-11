@@ -90,13 +90,21 @@ async def get_admin_stats(
         select(func.count(PostbackLog.id)).where(PostbackLog.hash_valid == False)
     )).scalar() or 0
 
-    # Total CPX Revenue USD (from status = 1 minus status = 2)
+    # Total Revenue USD (from status = 1 minus status = 2, excluding test amounts >= 50 USD)
     revenue_credited = (await db.execute(
-        select(func.sum(CPXTransaction.amount_usd)).where(CPXTransaction.status == 1)
+        select(func.sum(CPXTransaction.amount_usd)).where(
+            CPXTransaction.status == 1,
+            CPXTransaction.amount_usd < Decimal("50.00"),
+            ~CPXTransaction.trans_id.ilike("%test%")
+        )
     )).scalar() or Decimal("0.00")
 
     revenue_reversed = (await db.execute(
-        select(func.sum(CPXTransaction.amount_usd)).where(CPXTransaction.status == 2)
+        select(func.sum(CPXTransaction.amount_usd)).where(
+            CPXTransaction.status == 2,
+            CPXTransaction.amount_usd < Decimal("50.00"),
+            ~CPXTransaction.trans_id.ilike("%test%")
+        )
     )).scalar() or Decimal("0.00")
 
     total_revenue_usd = max(Decimal("0.00"), revenue_credited - revenue_reversed)
