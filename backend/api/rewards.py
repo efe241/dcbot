@@ -13,11 +13,25 @@ router = APIRouter(prefix="/api/rewards", tags=["Rewards"])
 
 DEFAULT_REWARDS = [
     {
-        "name": "1x Giveaway Ticket",
-        "description": "Discord sunucusundaki özel çekilişlere katılım bileti.",
+        "name": "200k OwO Cash",
+        "description": "Discord sunucusunda 200,000 OwO parası ödülü.",
         "coin_price": Decimal("500.00"),
-        "reward_type": "giveaway_ticket",
-        "icon_emoji": "🎟️"
+        "reward_type": "owo_cash",
+        "icon_emoji": "🪙"
+    },
+    {
+        "name": "500k OwO Cash",
+        "description": "Discord sunucusunda 500,000 OwO parası ödülü.",
+        "coin_price": Decimal("1200.00"),
+        "reward_type": "owo_cash",
+        "icon_emoji": "💰"
+    },
+    {
+        "name": "1 Million OwO Cash",
+        "description": "Discord sunucusunda 1,000,000 OwO parası büyük ödül.",
+        "coin_price": Decimal("2200.00"),
+        "reward_type": "owo_cash",
+        "icon_emoji": "💎"
     },
     {
         "name": "7 Günlük VIP Rolü",
@@ -26,21 +40,6 @@ DEFAULT_REWARDS = [
         "reward_type": "vip",
         "duration_days": 7,
         "icon_emoji": "⭐"
-    },
-    {
-        "name": "30 Günlük VIP Rolü",
-        "description": "Sunucuda 30 gün boyunca VIP rolü, XP boost ve özel yetkiler.",
-        "coin_price": Decimal("7500.00"),
-        "reward_type": "vip",
-        "duration_days": 30,
-        "icon_emoji": "👑"
-    },
-    {
-        "name": "Özel Discord Rolü",
-        "description": "İstediğin renkte ve isimde özel Discord rolü hakkı.",
-        "coin_price": Decimal("15000.00"),
-        "reward_type": "custom",
-        "icon_emoji": "🎨"
     }
 ]
 
@@ -49,8 +48,12 @@ async def get_reward_items(db: AsyncSession = Depends(get_db)):
     stmt = select(RewardItem).where(RewardItem.is_active == True)
     items = (await db.execute(stmt)).scalars().all()
 
-    # Seed default items if empty
-    if not items:
+    # Seed or refresh default items if 200k OwO Cash is not present
+    has_owo = any("200k OwO" in (i.name or "") for i in items)
+    if not items or not has_owo:
+        for item in items:
+            item.is_active = False
+        await db.commit()
         for d in DEFAULT_REWARDS:
             item = RewardItem(**d)
             db.add(item)
