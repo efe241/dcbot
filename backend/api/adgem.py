@@ -33,7 +33,16 @@ async def adgem_postback(request: Request, db: AsyncSession = Depends(get_db)):
         try:
             params = await request.json()
         except Exception:
-            params = dict(request.query_params)
+            try:
+                form_data = await request.form()
+                params = dict(form_data)
+            except Exception:
+                params = dict(request.query_params)
+        # If query parameters are present on POST URL, merge them
+        if request.query_params:
+            for k, v in request.query_params.items():
+                if k not in params or not params[k]:
+                    params[k] = v
     else:
         params = dict(request.query_params)
 
