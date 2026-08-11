@@ -14,29 +14,29 @@ router = APIRouter(prefix="/api/rewards", tags=["Rewards"])
 DEFAULT_REWARDS = [
     {
         "name": "50k OwO Cash (Min. Paket)",
-        "description": "Discord sunucusunda 50,000 OwO parası ödülü (Minimum alım sınırı: 50 Coin).",
-        "coin_price": Decimal("50.00"),
+        "description": "Discord sunucusunda 50,000 OwO parası ödülü (En düşük paket: 15 Coin).",
+        "coin_price": Decimal("15.00"),
         "reward_type": "owo_cash",
         "icon_emoji": "🪙"
     },
     {
         "name": "200k OwO Cash",
-        "description": "Discord sunucusunda 200,000 OwO parası ödülü (1 Coin = 1,000 OwO).",
-        "coin_price": Decimal("200.00"),
+        "description": "Discord sunucusunda 200,000 OwO parası ödülü (15 Coin = 50k OwO).",
+        "coin_price": Decimal("60.00"),
         "reward_type": "owo_cash",
         "icon_emoji": "💰"
     },
     {
         "name": "500k OwO Cash",
-        "description": "Discord sunucusunda 500,000 OwO parası ödülü (1 Coin = 1,000 OwO).",
-        "coin_price": Decimal("500.00"),
+        "description": "Discord sunucusunda 500,000 OwO parası ödülü (15 Coin = 50k OwO).",
+        "coin_price": Decimal("150.00"),
         "reward_type": "owo_cash",
         "icon_emoji": "💎"
     },
     {
         "name": "1 Million OwO Cash",
-        "description": "Discord sunucusunda 1,000,000 OwO parası büyük ödül (1 Coin = 1,000 OwO).",
-        "coin_price": Decimal("1000.00"),
+        "description": "Discord sunucusunda 1,000,000 OwO parası büyük ödül (15 Coin = 50k OwO).",
+        "coin_price": Decimal("300.00"),
         "reward_type": "owo_cash",
         "icon_emoji": "👑"
     }
@@ -47,9 +47,9 @@ async def get_reward_items(db: AsyncSession = Depends(get_db)):
     stmt = select(RewardItem).where(RewardItem.is_active == True)
     items = (await db.execute(stmt)).scalars().all()
 
-    # Seed or refresh default items if 50k OwO Cash is missing
-    has_50k = any("50k OwO" in (i.name or "") for i in items)
-    if not items or not has_50k:
+    # Seed or refresh default items if 15 Coin 50k OwO Cash is missing
+    has_15_coin_50k = any(i.coin_price == Decimal("15.00") for i in items if "50k" in (i.name or ""))
+    if not items or not has_15_coin_50k:
         for item in items:
             item.is_active = False
         await db.commit()
