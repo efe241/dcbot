@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Görev Salonu | SurveyTR</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <a href="/" class="logo-group">
+            <div class="logo-badge">💎</div>
+            <div class="logo-text">Survey<span>TR</span></div>
+        </a>
+        <div class="nav-user">
+            <div class="coin-badge">
+                <span>🪙</span>
+                <span id="user-balance-badge">0.00</span> Coins
+            </div>
+            <a href="/admin-panel" id="admin-link-btn" class="btn btn-secondary" style="display: none;">⚙️ Admin Panel</a>
+            <button id="logout-btn" class="btn btn-secondary" style="display: none;" onclick="logout()">Çıkış Yap</button>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        <!-- Legal Disclaimer Banner -->
+        <div class="disclaimer-banner">
+            <span style="font-size: 1.2rem;">⚠️</span>
+            <div>
+                <strong>Hatırlatma:</strong> Coinler platform içi sanal puandır. Gerçek para değildir, banka ödemesi veya nakit olarak çekilemez. Sadece bu Discord sunucusundaki dijital ödüllerde kullanılabilir.
+            </div>
+        </div>
+
+        <!-- Dev Mode Mock Login Banner (If unauthenticated in dev) -->
+        <div id="mock-login-banner" class="glass-card" style="display: none; border-color: rgba(99, 102, 241, 0.3);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h4 style="color: var(--accent-cyan); margin-bottom: 0.3rem;">⚡ Test / Önizleme Modu</h4>
+                    <p style="font-size: 0.85rem; color: var(--text-muted);">Discord OAuth2 olmadan test etmek için bir test hesabı ile hızlı giriş yapabilirsiniz.</p>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn btn-primary" onclick="quickMockLogin('123456789012345678', 'Ahmet_User')">Test Kullanıcı A</button>
+                    <button class="btn btn-secondary" onclick="quickMockLogin('987654321098765432', 'Mehmet_User')">Test Kullanıcı B</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Profile Card -->
+        <div class="glass-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
+                <div style="display: flex; align-items: center; gap: 1.25rem;">
+                    <div id="user-avatar" style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 700;">
+                        👤
+                    </div>
+                    <div>
+                        <h2 id="user-name" style="font-size: 1.4rem; margin-bottom: 0.2rem;">Giriş Yapılmadı</h2>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Discord ID: <span id="user-discord-id" style="font-family: monospace; color: var(--accent-cyan);">-</span></p>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1.5rem;">
+                    <div class="stat-box" style="padding: 0.75rem 1.25rem;">
+                        <span class="stat-label">Mevcut Bakiye</span>
+                        <div class="stat-value gold" id="profile-balance">0.00 Coins</div>
+                    </div>
+                    <div class="stat-box" style="padding: 0.75rem 1.25rem;">
+                        <span class="stat-label">Hesap Durumu</span>
+                        <div style="margin-top: 0.3rem;"><span id="risk-badge" class="badge badge-success">Doğrulanmış</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="tabs-nav">
+            <button class="tab-btn active" onclick="switchTab('cpx-wall', this)">🎯 CPX SurveyWall</button>
+            <button class="tab-btn" onclick="switchTab('rewards-shop', this)">🎁 Ödül Mağazası</button>
+            <button class="tab-btn" onclick="switchTab('history-tab', this)">📜 İşlem Geçmişi</button>
+            <button class="tab-btn" onclick="switchTab('rules-tab', this)">⚖️ Kurallar & SSS</button>
+        </div>
+
+        <!-- TAB 1: CPX SurveyWall -->
+        <div id="cpx-wall" class="tab-content">
+            <div class="glass-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <div>
+                        <h3 style="font-size: 1.25rem; margin-bottom: 0.25rem;">🎯 CPX Research Anket Duvarı</h3>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Aşağıdaki listeden dilediğiniz anketi seçip tamamlayarak Coin kazanın.</p>
+                    </div>
+                    <button class="btn btn-secondary" onclick="loadCPXWall()" style="font-size: 0.85rem;">🔄 Duvarı Yenile</button>
+                </div>
+
+                <div id="cpx-surveywall-container">
+                    <div style="text-align: center; color: var(--text-muted); padding: 3rem;">
+                        <p id="cpx-loading-text">Anket Duvarı Yükleniyor...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: Rewards Shop -->
+        <div id="rewards-shop" class="tab-content" style="display: none;">
+            <div class="glass-card">
+                <h3 style="font-size: 1.25rem; margin-bottom: 0.25rem;">🎁 Dijital Ödül Mağazası</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Anketlerden kazandığınız Coinleri sunucu içi özel rollere ve ayrıcalıklara dönüştürün.</p>
+
+                <div id="rewards-grid" class="grid-2">
+                    <!-- Loaded dynamically via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: History -->
+        <div id="history-tab" class="tab-content" style="display: none;">
+            <div class="glass-card">
+                <h3 style="font-size: 1.25rem; margin-bottom: 0.25rem;">📜 İşlem Geçmişi (Coin Ledger)</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Kazanılan ve harcanan tüm Coin hareketlerinizin şeffaf dökümü.</p>
+
+                <div class="data-table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Tarih</th>
+                                <th>İşlem Tipi</th>
+                                <th>Açıklama</th>
+                                <th>Referans ID</th>
+                                <th>Miktar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table-body">
+                            <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Yükleniyor...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: Rules -->
+        <div id="rules-tab" class="tab-content" style="display: none;">
+            <div class="glass-card">
+                <h3 style="font-size: 1.25rem; margin-bottom: 1rem;">⚖️ Platform Kullanım Şartları ve Kuralları</h3>
+                <ul style="line-height: 1.8; color: var(--text-muted); padding-left: 1.5rem; font-size: 0.95rem;">
+                    <li><strong style="color: var(--text-main);">Sanal Puan Birimi:</strong> Kazanılan tüm Coinler tamamen sunucu içi dijital puandır. Hiçbir finansal değere veya nakit karşılığına sahip değildir.</li>
+                    <li><strong style="color: var(--text-main);">Ödeme & Çekim Yasağı:</strong> Platform üzerinde kullanıcılara kesinlikle nakit ödeme, banka havalesi veya kripto çekimi sunulmaz.</li>
+                    <li><strong style="color: var(--text-main);">Dürüst Kullanım Politikası:</strong> Sahte IP, Proxy, VPN, otomatik bot veya hileli yöntemlerle anket tamamlama girişimleri kesinlikle yasaktır.</li>
+                    <li><strong style="color: var(--text-main);">İptal / Reversal İşlemleri:</strong> CPX Research tarafından geçersiz veya fraud olarak işaretlenen anket ödülleri otomatik olarak bakiyenizden düşülür (Reversal).</li>
+                    <li><strong style="color: var(--text-main);">Hesap Sorumluluğu:</strong> Her Discord kullanıcısı yalnızca tek bir hesaba sahip olabilir. Çoklu hesap kullanımı engellenir.</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Purchase Confirmation Modal -->
+    <div id="purchase-modal" class="modal-overlay">
+        <div class="modal-card">
+            <h3 id="modal-title" style="margin-bottom: 0.5rem;">Ödül Satın Alma</h3>
+            <p id="modal-desc" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;"></p>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="closeModal()">İptal</button>
+                <button id="modal-confirm-btn" class="btn btn-primary" onclick="confirmPurchase()">Onayla ve Al</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>

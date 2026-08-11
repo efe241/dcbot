@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.env
+.venv
+env/
+venv/
+.pytest_cache/
+.coverage
+htmlcov/
+*.db
+surveytr_bot.zip
+.vercel
+
+env.txt
+

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | SurveyTR</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="/" class="logo-group">
+            <div class="logo-badge">⚙️</div>
+            <div class="logo-text">Admin <span>SurveyTR</span></div>
+        </a>
+        <div class="nav-user">
+            <a href="/tasks" class="btn btn-secondary">🎯 Görev Salonu</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <div>
+                <h1 style="font-size: 1.8rem; margin-bottom: 0.2rem;">📊 Admin Analitik & Yönetim Paneli</h1>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">CPX Gelirleri, Kullanıcı Oranları, Postback Denetimi ve Coin İşlemleri</p>
+            </div>
+            <button class="btn btn-primary" onclick="loadAdminStats()">🔄 Verileri Yenile</button>
+        </div>
+
+        <!-- Metrics Grid -->
+        <div class="grid-4" style="margin-bottom: 2rem;">
+            <div class="stat-box">
+                <span class="stat-label">Toplam Gelir (CPX USD)</span>
+                <div class="stat-value gold" id="stat-total-rev">$0.00</div>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">Kullanıcı Başına Gelir</span>
+                <div class="stat-value cyan" id="stat-rev-user">$0.00</div>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">Anket Başına Gelir</span>
+                <div class="stat-value cyan" id="stat-rev-survey">$0.00</div>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">Tamamlanan Anketler</span>
+                <div class="stat-value green" id="stat-surveys">0</div>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">Toplam Kullanıcı / Aktif</span>
+                <div class="stat-value" id="stat-users">0 / 0</div>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">Dağıtılan Coinler</span>
+                <div class="stat-value gold" id="stat-coins-issued">0</div>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">Harcanan Coinler</span>
+                <div class="stat-value cyan" id="stat-coins-spent">0</div>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">Reversal / Başarı Oranı</span>
+                <div class="stat-value green" id="stat-completion-rate">0%</div>
+            </div>
+        </div>
+
+        <!-- Admin Coin Management Form -->
+        <div class="glass-card" style="margin-bottom: 2rem;">
+            <h3 style="font-size: 1.2rem; margin-bottom: 1rem;">💰 Manuel Coin Ekle / Çıkar (Ledger Loglu)</h3>
+            <form id="coin-adjust-form" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: end;">
+                <div class="form-group" style="margin:0;">
+                    <label class="form-label">Discord User ID</label>
+                    <input type="text" id="target-user-id" class="form-input" placeholder="123456789012345678" required>
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label class="form-label">Coin Miktarı</label>
+                    <input type="number" step="0.01" id="adjust-amount" class="form-input" placeholder="500.00" required>
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label class="form-label">İşlem Türü</label>
+                    <select id="adjust-action" class="form-select">
+                        <option value="add">➕ Ekle (+)</option>
+                        <option value="remove">➖ Çıkar (-)</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label class="form-label">Sebep / Açıklama</label>
+                    <input type="text" id="adjust-reason" class="form-input" placeholder="Yarışma ödülü / Düzeltme" required>
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">İşlemi Uygula</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Postback Logs Table -->
+        <div class="glass-card" style="margin-bottom: 2rem;">
+            <h3 style="font-size: 1.2rem; margin-bottom: 1rem;">🛡️ CPX Postback Denetim Günlüğü (Audit Logs)</h3>
+            <div class="data-table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Tarih</th>
+                            <th>IP Adresi</th>
+                            <th>Trans ID</th>
+                            <th>User ID</th>
+                            <th>Status</th>
+                            <th>Amount USD</th>
+                            <th>Hash Kontrolü</th>
+                            <th>IP Whitelist</th>
+                            <th>Sonuç</th>
+                        </tr>
+                    </thead>
+                    <tbody id="postback-logs-table">
+                        <tr><td colspan="9" style="text-align: center;">Yükleniyor...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Users Risk & Balance Table -->
+        <div class="glass-card">
+            <h3 style="font-size: 1.2rem; margin-bottom: 1rem;">👥 Kullanıcılar ve Risk Puanları</h3>
+            <div class="data-table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Discord ID</th>
+                            <th>Kullanıcı Adı</th>
+                            <th>Coin Bakiyesi</th>
+                            <th>Risk Puanı</th>
+                            <th>Durum</th>
+                            <th>Kayıt Tarihi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table">
+                        <tr><td colspan="6" style="text-align: center;">Yükleniyor...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="/js/admin.js"></script>
+</body>
+</html>

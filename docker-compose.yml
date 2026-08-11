@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: cpx_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: cpx_user
+      POSTGRES_PASSWORD: cpx_password
+      POSTGRES_DB: cpx_coins
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    container_name: cpx_coin_app
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - DATABASE_URL=postgresql+asyncpg://cpx_user:cpx_password@db:5432/cpx_coins
+      - CPX_APP_ID=35266
+      - CPX_APP_SECURE_HASH=${CPX_APP_SECURE_HASH}
+      - DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN}
+      - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}
+      - DISCORD_CLIENT_SECRET=${DISCORD_CLIENT_SECRET}
+      - DISCORD_REDIRECT_URI=${DISCORD_REDIRECT_URI}
+      - SECRET_KEY=${SECRET_KEY}
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:

@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "chatproject-24"
+  },
+  "targets": {
+    "chatproject-24": {
+      "hosting": {
+        "surveytr": [
+          "surveytr"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

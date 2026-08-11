@@ -1,0 +1,28 @@
+{
+  "hosting": [
+    {
+      "target": "surveytr",
+      "public": "frontend",
+      "cleanUrls": true,
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "/tasks",
+          "destination": "/tasks.html"
+        },
+        {
+          "source": "/admin-panel",
+          "destination": "/admin.html"
+        },
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
+    }
+  ]
+}

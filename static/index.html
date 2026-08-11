@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProCheck | Advanced Proxy Scraper & Checker</title>
+    <!-- Google Fonts & Font Awesome Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="navbar">
+            <div class="brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>PROCHECK <span>v2.0</span></h1>
+                    <p>Internet Proxy Scraper & High-Speed Checker</p>
+                </div>
+            </div>
+
+            <div class="navbar-status">
+                <div class="status-badge" id="wsStatus">
+                    <span class="dot yellow"></span> Connecting...
+                </div>
+                <div class="status-badge" id="engineStatus">
+                    <span class="dot grey"></span> Engine Idle
+                </div>
+            </div>
+        </header>
+
+        <!-- Progress Bar (Active when checking/scraping) -->
+        <div class="progress-bar-container" id="progressContainer">
+            <div class="progress-bar" id="progressBar"></div>
+            <div class="progress-info">
+                <span id="progressText">Processing proxies...</span>
+                <span id="progressPercent">0%</span>
+            </div>
+        </div>
+
+        <!-- Dashboard Stats Cards -->
+        <section class="stats-grid">
+            <div class="stat-card blue">
+                <div class="stat-icon"><i class="fa-solid fa-cloud-arrow-down"></i></div>
+                <div class="stat-details">
+                    <span class="stat-label">Toplam Çekilen (Scraped)</span>
+                    <h2 class="stat-value" id="statScraped">0</h2>
+                </div>
+            </div>
+
+            <div class="stat-card purple">
+                <div class="stat-icon"><i class="fa-solid fa-vial-circle-check"></i></div>
+                <div class="stat-details">
+                    <span class="stat-label">Test Edilen</span>
+                    <h2 class="stat-value" id="statChecked">0</h2>
+                </div>
+            </div>
+
+            <div class="stat-card green">
+                <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+                <div class="stat-details">
+                    <span class="stat-label">Çalışan (Alive)</span>
+                    <h2 class="stat-value" id="statAlive">0</h2>
+                </div>
+            </div>
+
+            <div class="stat-card red">
+                <div class="stat-icon"><i class="fa-solid fa-circle-xmark"></i></div>
+                <div class="stat-details">
+                    <span class="stat-label">Ölü (Dead)</span>
+                    <h2 class="stat-value" id="statDead">0</h2>
+                </div>
+            </div>
+
+            <div class="stat-card amber">
+                <div class="stat-icon"><i class="fa-solid fa-bolt"></i></div>
+                <div class="stat-details">
+                    <span class="stat-label">Ort. Gecikme (Ping)</span>
+                    <h2 class="stat-value" id="statLatency">0 <small>ms</small></h2>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Controls Toolbar -->
+        <section class="toolbar">
+            <div class="toolbar-left">
+                <button class="btn btn-primary" id="btnScrape">
+                    <i class="fa-solid fa-rotate"></i> Internet Proxylerini Çek
+                </button>
+                <button class="btn btn-success" id="btnCheck" disabled>
+                    <i class="fa-solid fa-play"></i> Test Et & Checkle
+                </button>
+                <button class="btn btn-danger" id="btnStop" style="display: none;">
+                    <i class="fa-solid fa-stop"></i> Durdur
+                </button>
+                <button class="btn btn-secondary" id="btnCustom">
+                    <i class="fa-solid fa-paste"></i> Özel Liste Ekle
+                </button>
+            </div>
+
+            <div class="toolbar-right">
+                <div class="dropdown">
+                    <button class="btn btn-accent dropdown-toggle" id="btnExportToggle">
+                        <i class="fa-solid fa-download"></i> Dışa Aktar / İndir
+                    </button>
+                    <div class="dropdown-menu" id="exportMenu">
+                        <a class="dropdown-item" href="#" id="exportTxt"><i class="fa-solid fa-file-lines"></i> TXT (IP:Port)</a>
+                        <a class="dropdown-item" href="#" id="exportJson"><i class="fa-solid fa-file-code"></i> JSON Detaylı</a>
+                        <a class="dropdown-item" href="#" id="exportCsv"><i class="fa-solid fa-file-csv"></i> CSV Tablo</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#" id="copyAlive"><i class="fa-solid fa-copy"></i> Çalışanları Kopyala</a>
+                    </div>
+                </div>
+                
+                <button class="btn btn-outline" id="btnSettings">
+                    <i class="fa-solid fa-sliders"></i> Ayarlar
+                </button>
+            </div>
+        </section>
+
+        <!-- Filters Section -->
+        <section class="filters-bar">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="searchInput" placeholder="IP Adresi veya Port Ara...">
+            </div>
+
+            <div class="filter-group">
+                <span class="filter-label">Protokol:</span>
+                <div class="pill-group" id="protocolPills">
+                    <button class="pill active" data-protocol="all">Hepsı</button>
+                    <button class="pill" data-protocol="http">HTTP/S</button>
+                    <button class="pill" data-protocol="socks4">SOCKS4</button>
+                    <button class="pill" data-protocol="socks5">SOCKS5</button>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <span class="filter-label">Durum:</span>
+                <div class="pill-group" id="statusPills">
+                    <button class="pill active" data-status="all">Hepsı</button>
+                    <button class="pill" data-status="alive">🟢 Çalışan</button>
+                    <button class="pill" data-status="dead">🔴 Ölü</button>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <span class="filter-label">Max Latency:</span>
+                <select id="latencySelect" class="custom-select">
+                    <option value="10000" selected>Tümü</option>
+                    <option value="300">&lt; 300 ms (Çok Hızlı)</option>
+                    <option value="600">&lt; 600 ms (Hızlı)</option>
+                    <option value="1200">&lt; 1200 ms (Orta)</option>
+                </select>
+            </div>
+        </section>
+
+        <!-- Main Data Table -->
+        <section class="table-card">
+            <div class="table-header">
+                <h3><i class="fa-solid fa-list-check"></i> Proxy Test Sonuçları (<span id="resultsCount">0</span>)</h3>
+                <span class="table-subtitle">Canlı olarak güncellenir</span>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="proxy-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>IP Adresi</th>
+                            <th>Port</th>
+                            <th>Protokol</th>
+                            <th>Gecikme (Ping)</th>
+                            <th>Anonimlik</th>
+                            <th>Durum</th>
+                            <th style="text-align: right;">İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody id="proxyTableBody">
+                        <tr class="empty-row">
+                            <td colspan="8">
+                                <div class="empty-state">
+                                    <i class="fa-solid fa-globe"></i>
+                                    <p>Henüz proxy testi başlatılmadı.</p>
+                                    <small>"Internet Proxylerini Çek" butonuna basarak başlayabilirsiniz.</small>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal: Custom Proxies Input -->
+    <div class="modal-overlay" id="customModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-paste"></i> Özel Proxy Listesi Yapıştır</h3>
+                <button class="modal-close" id="closeCustomModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-desc">Her satıra bir adet <code>IP:Port</code> formatında proxy yazın veya yapıştırın:</p>
+                <textarea id="customProxyText" rows="10" placeholder="192.168.1.1:8080&#10;10.0.0.1:1080&#10;45.33.2.1:3128"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelCustomModal">İptal</button>
+                <button class="btn btn-success" id="confirmCustomModal">Test Listesini Yükle</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Settings -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-sliders"></i> Test Ayarları</h3>
+                <button class="modal-close" id="closeSettingsModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-item">
+                    <label for="settingConcurrency">Eşzamanlı Thread / Concurrency Count (10 - 500):</label>
+                    <div class="range-box">
+                        <input type="range" id="settingConcurrency" min="10" max="500" step="10" value="150">
+                        <span id="valConcurrency" class="range-val">150 Thread</span>
+                    </div>
+                    <small>Daha yüksek thread daha hızlı test eder (Önerilen: 150-250).</small>
+                </div>
+
+                <div class="setting-item">
+                    <label for="settingTimeout">Bağlantı Zamanaşımı / Timeout (Saniye):</label>
+                    <div class="range-box">
+                        <input type="range" id="settingTimeout" min="1" max="15" step="0.5" value="5">
+                        <span id="valTimeout" class="range-val">5s</span>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <label for="settingTargetUrl">Test Hedef URL (Target Endpoint):</label>
+                    <input type="text" id="settingTargetUrl" class="custom-input" value="http://httpbin.org/ip">
+                    <small>Proxy bu adrese istek atarak doğrulanacaktır.</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="saveSettingsModal">Ayarları Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
