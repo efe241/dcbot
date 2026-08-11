@@ -32,14 +32,6 @@ DEFAULT_REWARDS = [
         "coin_price": Decimal("2200.00"),
         "reward_type": "owo_cash",
         "icon_emoji": "💎"
-    },
-    {
-        "name": "7 Günlük VIP Rolü",
-        "description": "Sunucuda 7 gün boyunca VIP rolü ve özel kanal erişimi.",
-        "coin_price": Decimal("2500.00"),
-        "reward_type": "vip",
-        "duration_days": 7,
-        "icon_emoji": "⭐"
     }
 ]
 
@@ -48,9 +40,10 @@ async def get_reward_items(db: AsyncSession = Depends(get_db)):
     stmt = select(RewardItem).where(RewardItem.is_active == True)
     items = (await db.execute(stmt)).scalars().all()
 
-    # Seed or refresh default items if 200k OwO Cash is not present
+    # Seed or refresh default items if VIP is present or 200k OwO is missing
+    has_vip = any(i.reward_type == "vip" or "VIP" in (i.name or "") for i in items)
     has_owo = any("200k OwO" in (i.name or "") for i in items)
-    if not items or not has_owo:
+    if not items or has_vip or not has_owo:
         for item in items:
             item.is_active = False
         await db.commit()
