@@ -108,11 +108,12 @@ class DiscordService:
             return None
 
     @staticmethod
-    def get_oauth_login_url() -> str:
+    def get_oauth_login_url(state: str = "default") -> str:
         return (
             f"{DISCORD_API_BASE}/oauth2/authorize"
             f"?client_id={settings.DISCORD_CLIENT_ID}"
             f"&redirect_uri={httpx.URL(settings.DISCORD_REDIRECT_URI)}"
             f"&response_type=code"
             f"&scope=identify%20email"
+            f"&state={state}"
         )

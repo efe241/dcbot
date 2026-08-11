@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -32,15 +33,17 @@ def get_current_user_id(request: Request) -> str:
     return payload["discord_id"]
 
 @router.get("/login")
-async def login():
+async def login(request: Request, state: Optional[str] = None):
     """
     Redirects user to Discord OAuth2 login page.
     """
-    url = DiscordService.get_oauth_login_url()
+    referer = request.headers.get("referer") or request.headers.get("origin") or ""
+    st = "firebase" if ("web.app" in referer or "firebaseapp.com" in referer or state == "firebase") else "vercel"
+    url = DiscordService.get_oauth_login_url(state=st)
     return RedirectResponse(url)
 
 @router.get("/callback")
-async def auth_callback(code: str, db: AsyncSession = Depends(get_db)):
+async def auth_callback(code: str, state: Optional[str] = None, db: AsyncSession = Depends(get_db)):
     """
     OAuth2 callback endpoint.
     """
@@ -88,7 +91,8 @@ async def auth_callback(code: str, db: AsyncSession = Depends(get_db)):
         "email": email
     })
 
-    response = RedirectResponse(url="/tasks")
+    target_url = "https://surveytr.web.app/tasks" if state == "firebase" else "/tasks"
+    response = RedirectResponse(url=target_url)
     response.set_cookie(
         key="session_token",
         value=session_jwt,
